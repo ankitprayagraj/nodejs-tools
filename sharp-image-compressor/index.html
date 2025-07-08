@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Compressor Client</title>
+</head>
+<body>
+  <h1>Image Compressor Client</h1>
+  <form id="uploadForm" onsubmit="uploadImage(event)">
+    <input type="file" id="imageInput" accept="image/*" required>
+    <input type="range" id="compress" min="10" max="100" />
+    <button type="submit">Upload and Compress</button>
+  </form>
+  <div id="resultContainer"></div>
+
+  <script>
+    async function uploadImage(e) {
+      e.preventDefault();
+      console.log("form")
+      const formData = new FormData();
+      const fileInput = document.getElementById('imageInput');
+      const compress = document.getElementById('compress');
+      formData.append('image', fileInput.files[0]);
+      formData.append('compress',compress.value);
+      formData.append('format', 'webp');
+      try {
+        const response = await fetch('http://localhost:3000/compressor', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
+        }
+
+        const resultContainer = document.getElementById('resultContainer');
+        resultContainer.innerHTML = ''; // Clear previous results
+
+        // Display the compressed image
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(await response.blob());
+        resultContainer.appendChild(img);
+      } catch (error) {
+        console.error('Error uploading and compressing image:', error.message);
+        alert('Error uploading and compressing image. Please try again.');
+      }
+    }
+  </script>
+</body>
+</html>
